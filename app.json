@@ -1,6 +1,6 @@
 ﻿{
   "expo": {
-    "name": "Minik Adimlar",
+    "name": "Minik Adımlar",
     "slug": "minik-adimlar",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,22 +9,29 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FF6B9D"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.minikadimlar.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#FF6B9D"
+      },
+      "package": "com.minikadimlar.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "minik-adimlar"
+      }
     }
   }
 }

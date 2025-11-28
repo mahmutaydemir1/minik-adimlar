@@ -4,10 +4,13 @@
 };
 
 export const TAB_ROUTES = {
-  CHILDREN: 'Children',
   OVERVIEW: 'Overview',
+  PREGNANCY: 'Pregnancy',
+  MILESTONES: 'Milestones',
+  VACCINES: 'Vaccines',
   GROWTH: 'Growth',
   HEALTH: 'Health',
   JOURNAL: 'Journal',
+  CHILDREN: 'Children',
   SETTINGS: 'Settings',
 };

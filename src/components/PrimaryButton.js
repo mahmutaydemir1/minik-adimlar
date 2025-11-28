@@ -1,40 +1,127 @@
 ﻿import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { colors, borderRadius, typography, shadows } from '../constants/theme';
 
-const PrimaryButton = ({ title, onPress, disabled = false }) => {
+const PrimaryButton = ({ 
+  title, 
+  onPress, 
+  disabled = false, 
+  loading = false,
+  variant = 'primary', // primary, secondary, outline
+  size = 'medium', // small, medium, large
+  icon = null,
+}) => {
+  const buttonStyle = [
+    styles.button,
+    styles[variant],
+    styles[size],
+    disabled && styles.disabled,
+  ];
+
+  const textStyle = [
+    styles.text,
+    styles[`${variant}Text`],
+    styles[`${size}Text`],
+  ];
+
   return (
     <TouchableOpacity
-      style={[styles.button, disabled && styles.disabled]}
+      style={buttonStyle}
       onPress={onPress}
-      activeOpacity={0.85}
-      disabled={disabled}
+      activeOpacity={0.7}
+      disabled={disabled || loading}
     >
-      <Text style={styles.text}>{title}</Text>
+      {loading ? (
+        <ActivityIndicator color={variant === 'outline' ? colors.primary : colors.surface} />
+      ) : (
+        <>
+          {icon && <Text style={styles.icon}>{icon}</Text>}
+          <Text style={textStyle}>{title}</Text>
+        </>
+      )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#2563eb',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#2563eb',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 10,
-    elevation: 6,
+    justifyContent: 'center',
+    borderRadius: borderRadius.lg,
+    gap: 8,
+    minHeight: 48,
   },
+  
+  // Variants
+  primary: {
+    backgroundColor: colors.primary,
+    ...shadows.lg,
+  },
+  secondary: {
+    backgroundColor: colors.secondary,
+    ...shadows.lg,
+  },
+  outline: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    ...shadows.sm,
+  },
+  
+  // Sizes
+  small: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    minHeight: 40,
+  },
+  medium: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minHeight: 48,
+  },
+  large: {
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    minHeight: 56,
+  },
+  
   disabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
+  
+  // Text styles
   text: {
-    color: '#ffffff',
+    ...typography.button,
+    color: colors.surface,
     fontWeight: '700',
+  },
+  primaryText: {
+    color: colors.surface,
+  },
+  secondaryText: {
+    color: colors.surface,
+  },
+  outlineText: {
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  
+  smallText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  mediumText: {
     fontSize: 16,
-    letterSpacing: 0.4,
+    fontWeight: '700',
+  },
+  largeText: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  
+  icon: {
+    fontSize: 22,
   },
 });
 
