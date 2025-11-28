@@ -9,7 +9,6 @@ import DatePicker from '../../components/DatePicker';
 import PrimaryButton from '../../components/PrimaryButton';
 import ChildSelector from '../../components/ChildSelector';
 import useAppStore from '../../store/appStore';
-import { scheduleDailyJournalReminder } from '../../utils/notifications';
 import { colors, spacing, typography, borderRadius, shadows } from '../../constants/theme';
 
 const JournalScreen = () => {
@@ -34,20 +33,7 @@ const JournalScreen = () => {
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [journalEntries, selectedChildId]);
 
-  // İlk yüklemede günlük hatırlatıcısı kur
-  useEffect(() => {
-    const setupReminder = async () => {
-      const settings = useAppStore.getState().settings;
-      if (settings?.journalReminders && settings?.notificationsEnabled) {
-        try {
-          await scheduleDailyJournalReminder();
-        } catch (error) {
-          console.error('Günlük hatırlatıcısı kurulamadı:', error);
-        }
-      }
-    };
-    setupReminder();
-  }, []);
+  // Bu useEffect'i kaldırıyoruz - bildirim ayarları ekranında kurulacak
 
   const openAddModal = () => {
     setEditingEntry(null);

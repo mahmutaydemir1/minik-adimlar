@@ -17,35 +17,48 @@ Notifications.setNotificationHandler({
 export async function registerForPushNotificationsAsync() {
   let token;
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#6366F1',
-    });
-  }
-
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+  try {
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF6B9D',
+      });
     }
-    
-    if (finalStatus !== 'granted') {
-      alert('Bildirim izni verilmedi!');
-      return;
-    }
-    
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-  } else {
-    alert('Bildirimler sadece fiziksel cihazlarda çalışır!');
-  }
 
-  return token;
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      
+      if (finalStatus !== 'granted') {
+        console.warn('Bildirim izni verilmedi');
+        return null;
+      }
+      
+      // Expo Go'da push token alınamayabilir, bu normal
+      try {
+        token = (await Notifications.getExpoPushTokenAsync()).data;
+      } catch (tokenError) {
+        console.warn('Push token alınamadı (Expo Go\'da normal):', tokenError.message);
+        // Token olmasa bile yerel bildirimler çalışır
+        return null;
+      }
+    } else {
+      console.warn('Simulator/Emulator - bildirimler sınırlı çalışır');
+      return null;
+    }
+
+    return token;
+  } catch (error) {
+    console.error('Bildirim kaydı hatası:', error);
+    throw error;
+  }
 }
 
 // Aşı hatırlatıcısı planla
@@ -120,41 +133,57 @@ export async function scheduleWeeklyPregnancyReminder(week) {
 
 // Günlük hatırlatıcı (akşam günlük yazma)
 export async function scheduleDailyJournalReminder() {
-  const trigger = {
-    hour: 20,
-    minute: 0,
-    repeats: true,
-  };
+  try {
+    const trigger = {
+      hour: 20,
+      minute: 0,
+      repeats: true,
+    };
 
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: '📝 Günlük Zamanı',
-      body: 'Bugün neler oldu? Özel anları kaydetmeyi unutmayın!',
-      data: { type: 'journal' },
-      sound: true,
-    },
-    trigger,
-  });
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '📝 Günlük Zamanı',
+        body: 'Bugün neler oldu? Özel anları kaydetmeyi unutmayın!',
+        data: { type: 'journal' },
+        sound: true,
+      },
+      trigger,
+    });
+    
+    console.log('Günlük hatırlatıcısı kuruldu, ID:', notificationId);
+    return notificationId;
+  } catch (error) {
+    console.error('Günlük hatırlatıcısı kurulamadı:', error);
+    throw error;
+  }
 }
 
 // Büyüme ölçümü hatırlatıcısı (aylık)
 export async function scheduleMonthlyGrowthReminder(childName) {
-  const trigger = {
-    day: 1, // Her ayın 1'i
-    hour: 10,
-    minute: 0,
-    repeats: true,
-  };
+  try {
+    const trigger = {
+      day: 1, // Her ayın 1'i
+      hour: 10,
+      minute: 0,
+      repeats: true,
+    };
 
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: '📏 Aylık Ölçüm Zamanı',
-      body: `${childName} için kilo ve boy ölçümü yapma zamanı!`,
-      data: { type: 'growth', childName },
-      sound: true,
-    },
-    trigger,
-  });
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '📏 Aylık Ölçüm Zamanı',
+        body: `${childName} için kilo ve boy ölçümü yapma zamanı!`,
+        data: { type: 'growth', childName },
+        sound: true,
+      },
+      trigger,
+    });
+    
+    console.log(`Büyüme hatırlatıcısı kuruldu (${childName}), ID:`, notificationId);
+    return notificationId;
+  } catch (error) {
+    console.error(`Büyüme hatırlatıcısı kurulamadı (${childName}):`, error);
+    throw error;
+  }
 }
 
 // Tüm bildirimleri iptal et
@@ -170,4 +199,27 @@ export async function cancelNotification(notificationId) {
 // Planlanmış bildirimleri listele
 export async function getAllScheduledNotifications() {
   return await Notifications.getAllScheduledNotificationsAsync();
+}
+
+// Test bildirimi (5 saniye sonra)
+export async function scheduleTestNotification() {
+  try {
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '🔔 Test Bildirimi',
+        body: 'Bildirimler çalışıyor!',
+        data: { type: 'test' },
+        sound: true,
+      },
+      trigger: {
+        seconds: 5,
+      },
+    });
+    
+    console.log('Test bildirimi kuruldu, ID:', notificationId);
+    return notificationId;
+  } catch (error) {
+    console.error('Test bildirimi kurulamadı:', error);
+    throw error;
+  }
 }

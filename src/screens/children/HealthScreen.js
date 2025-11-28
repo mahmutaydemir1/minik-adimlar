@@ -23,7 +23,7 @@ const HealthScreen = () => {
   const deleteDoctorAppointment = useAppStore((state) => state.deleteDoctorAppointment);
   
   const [modalVisible, setModalVisible] = useState(false);
-  const [appointmentDate, setAppointmentDate] = useState(dayjs().add(1, 'week').format('YYYY-MM-DD'));
+  const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentNote, setAppointmentNote] = useState('');
   
   const child = children.find((c) => c.id === selectedChildId);
@@ -291,10 +291,14 @@ const HealthScreen = () => {
               <DatePicker
                 label="Randevu Tarihi"
                 value={appointmentDate}
-                onChange={setAppointmentDate}
+                onChange={(date) => {
+                  console.log('Seçilen tarih:', date);
+                  setAppointmentDate(date);
+                }}
                 placeholder="Tarih seçin"
                 icon="📅"
                 minimumDate={new Date()}
+                maximumDate={dayjs().add(2, 'year').toDate()}
               />
 
               <TextInputField
@@ -348,7 +352,7 @@ const HealthScreen = () => {
 
                     setModalVisible(false);
                     setAppointmentNote('');
-                    setAppointmentDate(dayjs().add(1, 'week').format('YYYY-MM-DD'));
+                    setAppointmentDate('');
                   }}
                   icon="✅"
                   style={{ flex: 1 }}

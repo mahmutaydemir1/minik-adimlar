@@ -18,17 +18,27 @@ const DatePicker = ({
   const [show, setShow] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  // String'i Date objesine çevir
-  const dateValue = value ? dayjs(value).toDate() : new Date();
+  // String'i Date objesine çevir - value yoksa minimumDate veya bugün
+  const getInitialDate = () => {
+    if (value) return dayjs(value).toDate();
+    if (minimumDate) return minimumDate;
+    return new Date();
+  };
+  
+  const dateValue = getInitialDate();
 
   const handleChange = (event, selectedDate) => {
     if (Platform.OS === 'android') {
       setShow(false);
+      setIsFocused(false);
     }
     
-    if (selectedDate) {
+    if (event.type === 'set' && selectedDate) {
       const formattedDate = dayjs(selectedDate).format('YYYY-MM-DD');
       onChange(formattedDate);
+    } else if (event.type === 'dismissed') {
+      setShow(false);
+      setIsFocused(false);
     }
   };
 
@@ -77,39 +87,35 @@ const DatePicker = ({
 
       {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {show && (
-        <>
-          {Platform.OS === 'ios' && (
-            <View style={styles.iosPickerContainer}>
-              <View style={styles.iosPickerHeader}>
-                <TouchableOpacity onPress={handleClose}>
-                  <Text style={styles.iosPickerButton}>Tamam</Text>
-                </TouchableOpacity>
-              </View>
-              <DateTimePicker
-                value={dateValue}
-                mode="date"
-                display="spinner"
-                onChange={handleChange}
-                maximumDate={maximumDate}
-                minimumDate={minimumDate}
-                locale="tr-TR"
-                textColor={colors.textPrimary}
-              />
-            </View>
-          )}
-          
-          {Platform.OS === 'android' && (
-            <DateTimePicker
-              value={dateValue}
-              mode="date"
-              display="default"
-              onChange={handleChange}
-              maximumDate={maximumDate}
-              minimumDate={minimumDate}
-            />
-          )}
-        </>
+      {show && Platform.OS === 'ios' && (
+        <View style={styles.iosPickerContainer}>
+          <View style={styles.iosPickerHeader}>
+            <TouchableOpacity onPress={handleClose}>
+              <Text style={styles.iosPickerButton}>Tamam</Text>
+            </TouchableOpacity>
+          </View>
+          <DateTimePicker
+            value={dateValue}
+            mode="date"
+            display="spinner"
+            onChange={handleChange}
+            maximumDate={maximumDate}
+            minimumDate={minimumDate}
+            locale="tr-TR"
+            textColor={colors.textPrimary}
+          />
+        </View>
+      )}
+      
+      {show && Platform.OS === 'android' && (
+        <DateTimePicker
+          value={dateValue}
+          mode="date"
+          display="default"
+          onChange={handleChange}
+          maximumDate={maximumDate}
+          minimumDate={minimumDate}
+        />
       )}
     </View>
   );
