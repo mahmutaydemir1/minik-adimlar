@@ -12,7 +12,16 @@ const useAppStore = create(
       growthRecords: [],
       journalEntries: [],
       vaccineRecords: [], // { childId, vaccineId, completedDate }
+      doctorAppointments: [], // { childId, date, note, createdAt }
       selectedChildId: undefined,
+      settings: {
+        notificationsEnabled: true,
+        vaccineReminders: true,
+        doctorReminders: true,
+        journalReminders: true,
+        growthReminders: true,
+        pregnancyReminders: true,
+      },
 
       addPregnancy: (payload) => {
         const newPregnancy = {
@@ -56,6 +65,7 @@ const useAppStore = create(
             growthRecords: state.growthRecords.filter((r) => r.childId !== childId),
             journalEntries: state.journalEntries.filter((e) => e.childId !== childId),
             vaccineRecords: state.vaccineRecords.filter((r) => r.childId !== childId),
+            doctorAppointments: state.doctorAppointments.filter((a) => a.childId !== childId),
           };
         });
       },
@@ -156,6 +166,41 @@ const useAppStore = create(
             };
           }
         });
+      },
+
+      updateSettings: (newSettings) => {
+        set((state) => ({
+          settings: { ...state.settings, ...newSettings },
+        }));
+      },
+
+      addDoctorAppointment: (payload) => {
+        const newAppointment = {
+          ...payload,
+          id: generateId('appointment'),
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          doctorAppointments: [...state.doctorAppointments, newAppointment].sort(
+            (a, b) => new Date(a.date) - new Date(b.date)
+          ),
+        }));
+      },
+
+      updateDoctorAppointment: (appointmentId, payload) => {
+        set((state) => ({
+          doctorAppointments: state.doctorAppointments.map((appointment) =>
+            appointment.id === appointmentId ? { ...appointment, ...payload } : appointment
+          ),
+        }));
+      },
+
+      deleteDoctorAppointment: (appointmentId) => {
+        set((state) => ({
+          doctorAppointments: state.doctorAppointments.filter(
+            (appointment) => appointment.id !== appointmentId
+          ),
+        }));
       },
     }),
     {

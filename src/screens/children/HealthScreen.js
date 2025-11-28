@@ -1,12 +1,16 @@
-﻿import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+﻿import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import ChildSelector from '../../components/ChildSelector';
+import DatePicker from '../../components/DatePicker';
+import TextInputField from '../../components/TextInputField';
+import PrimaryButton from '../../components/PrimaryButton';
 import useAppStore from '../../store/appStore';
+import { scheduleDoctorReminder } from '../../utils/notifications';
 import { colors, spacing, typography, borderRadius } from '../../constants/theme';
 
 const HealthScreen = () => {
@@ -14,8 +18,22 @@ const HealthScreen = () => {
   const children = useAppStore((state) => state.children);
   const vaccineRecords = useAppStore((state) => state.vaccineRecords);
   const growthRecords = useAppStore((state) => state.growthRecords);
+  const doctorAppointments = useAppStore((state) => state.doctorAppointments);
+  const addDoctorAppointment = useAppStore((state) => state.addDoctorAppointment);
+  const deleteDoctorAppointment = useAppStore((state) => state.deleteDoctorAppointment);
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState(dayjs().add(1, 'week').format('YYYY-MM-DD'));
+  const [appointmentNote, setAppointmentNote] = useState('');
   
   const child = children.find((c) => c.id === selectedChildId);
+  
+  const upcomingAppointments = useMemo(() => {
+    if (!selectedChildId) return [];
+    return doctorAppointments
+      .filter((a) => a.childId === selectedChildId && dayjs(a.date).isAfter(dayjs()))
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [doctorAppointments, selectedChildId]);
   
   const completedVaccines = useMemo(() => {
     if (!selectedChildId) return 0;
@@ -163,6 +181,61 @@ const HealthScreen = () => {
           </View>
         </Card>
 
+        {/* Doktor Randevuları */}
+        <Card variant="elevated" style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="calendar-outline" size={24} color={colors.accent} />
+            <Text style={styles.cardTitle}>Doktor Randevuları</Text>
+          </View>
+          
+          {upcomingAppointments.length > 0 ? (
+            upcomingAppointments.map((appointment) => (
+              <View key={appointment.id} style={styles.appointmentItem}>
+                <View style={styles.appointmentDate}>
+                  <Text style={styles.appointmentDay}>{dayjs(appointment.date).format('DD')}</Text>
+                  <Text style={styles.appointmentMonth}>{dayjs(appointment.date).format('MMM')}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.appointmentTitle}>
+                    {dayjs(appointment.date).format('DD MMMM YYYY')}
+                  </Text>
+                  {appointment.note && (
+                    <Text style={styles.appointmentNote}>{appointment.note}</Text>
+                  )}
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    Alert.alert(
+                      'Randevuyu Sil',
+                      'Bu randevuyu silmek istediğinizden emin misiniz?',
+                      [
+                        { text: 'İptal', style: 'cancel' },
+                        {
+                          text: 'Sil',
+                          style: 'destructive',
+                          onPress: () => deleteDoctorAppointment(appointment.id),
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={20} color={colors.error} />
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>Yaklaşan randevu yok</Text>
+          )}
+          
+          <TouchableOpacity
+            style={styles.addAppointmentButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Ionicons name="add-circle" size={20} color={colors.primary} />
+            <Text style={styles.addAppointmentText}>Randevu Ekle</Text>
+          </TouchableOpacity>
+        </Card>
+
         {/* Gelecek Özellikler */}
         <Card style={styles.comingSoonCard}>
           <Text style={styles.comingSoonTitle}>🚀 Yakında Gelecek Özellikler</Text>
@@ -186,6 +259,105 @@ const HealthScreen = () => {
           </>
         )}
       </ScrollView>
+
+      {/* Randevu Ekleme Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          />
+          <View style={styles.modalContent}>
+            <ScrollView
+              contentContainerStyle={styles.modalScroll}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Doktor Randevusu Ekle</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Ionicons name="close-circle" size={28} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+
+              <DatePicker
+                label="Randevu Tarihi"
+                value={appointmentDate}
+                onChange={setAppointmentDate}
+                placeholder="Tarih seçin"
+                icon="📅"
+                minimumDate={new Date()}
+              />
+
+              <TextInputField
+                label="Not (Opsiyonel)"
+                value={appointmentNote}
+                onChangeText={setAppointmentNote}
+                placeholder="Örn: Kontrol muayenesi"
+                icon="📝"
+                multiline
+                numberOfLines={3}
+                returnKeyType="done"
+              />
+
+              <View style={styles.modalButtons}>
+                <PrimaryButton
+                  title="İptal"
+                  onPress={() => setModalVisible(false)}
+                  variant="outline"
+                  style={{ flex: 1 }}
+                />
+                <PrimaryButton
+                  title="Kaydet"
+                  onPress={async () => {
+                    if (!selectedChildId) {
+                      Alert.alert('Hata', 'Lütfen önce bir çocuk seçin.');
+                      return;
+                    }
+                    if (!appointmentDate) {
+                      Alert.alert('Hata', 'Lütfen randevu tarihi seçin.');
+                      return;
+                    }
+
+                    addDoctorAppointment({
+                      childId: selectedChildId,
+                      date: appointmentDate,
+                      note: appointmentNote,
+                    });
+
+                    // Bildirim ayarları kontrol et ve hatırlatıcı ekle
+                    const settings = useAppStore.getState().settings;
+                    if (settings?.doctorReminders && settings?.notificationsEnabled) {
+                      try {
+                        await scheduleDoctorReminder(appointmentDate, child.name, appointmentNote);
+                        Alert.alert('Başarılı', 'Randevu eklendi ve hatırlatıcı kuruldu! 🔔');
+                      } catch (error) {
+                        Alert.alert('Başarılı', 'Randevu eklendi! (Hatırlatıcı kurulamadı)');
+                      }
+                    } else {
+                      Alert.alert('Başarılı', 'Randevu eklendi!');
+                    }
+
+                    setModalVisible(false);
+                    setAppointmentNote('');
+                    setAppointmentDate(dayjs().add(1, 'week').format('YYYY-MM-DD'));
+                  }}
+                  icon="✅"
+                  style={{ flex: 1 }}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -340,6 +512,92 @@ const styles = StyleSheet.create({
   featureText: {
     ...typography.body,
     color: colors.textMuted,
+  },
+  appointmentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  appointmentDate: {
+    width: 50,
+    height: 50,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appointmentDay: {
+    ...typography.h4,
+    color: colors.accent,
+    fontWeight: '700',
+  },
+  appointmentMonth: {
+    ...typography.caption,
+    color: colors.accent,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  appointmentTitle: {
+    ...typography.body,
+    color: colors.textPrimary,
+    fontWeight: '600',
+  },
+  appointmentNote: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  addAppointmentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.primaryLight,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.sm,
+  },
+  addAppointmentText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    maxHeight: '70%',
+  },
+  modalScroll: {
+    padding: spacing.xl,
+    gap: spacing.lg,
+    paddingBottom: spacing.xxxl,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    ...typography.h3,
+    color: colors.textPrimary,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.lg,
   },
 });
 

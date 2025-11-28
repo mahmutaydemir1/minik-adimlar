@@ -17,6 +17,8 @@
     "@react-navigation/native-stack": "^6.9.26",
     "dayjs": "^1.11.11",
     "expo": "~54.0.0",
+    "expo-device": "^8.0.9",
+    "expo-notifications": "^0.32.13",
     "expo-status-bar": "~3.0.8",
     "paths-js": "^0.4.11",
     "react": "19.1.0",

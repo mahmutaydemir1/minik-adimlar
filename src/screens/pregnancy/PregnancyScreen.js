@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import DatePicker from '../../components/DatePicker';
 import PrimaryButton from '../../components/PrimaryButton';
 import useAppStore from '../../store/appStore';
 import { pregnancyWeeks } from '../../constants/milestones';
+import { scheduleWeeklyPregnancyReminder } from '../../utils/notifications';
 import { colors, spacing, typography, borderRadius, shadows } from '../../constants/theme';
 
 const PregnancyScreen = () => {
@@ -93,6 +94,21 @@ const PregnancyScreen = () => {
       trimester: weeksPregnant <= 12 ? 1 : weeksPregnant <= 26 ? 2 : 3,
     };
   }, [activePregnancy]);
+
+  // Hamilelik eklendiğinde haftalık hatırlatıcı kur
+  useEffect(() => {
+    const setupReminder = async () => {
+      const settings = useAppStore.getState().settings;
+      if (activePregnancy && pregnancyInfo && settings?.pregnancyReminders && settings?.notificationsEnabled) {
+        try {
+          await scheduleWeeklyPregnancyReminder(pregnancyInfo.weeksPregnant);
+        } catch (error) {
+          console.error('Hamilelik hatırlatıcısı kurulamadı:', error);
+        }
+      }
+    };
+    setupReminder();
+  }, [activePregnancy, pregnancyInfo]);
 
   if (!activePregnancy) {
     return (

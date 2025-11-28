@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import dayjs from 'dayjs';
 import Card from '../../components/Card';
@@ -7,6 +7,7 @@ import Badge from '../../components/Badge';
 import ChildSelector from '../../components/ChildSelector';
 import useAppStore from '../../store/appStore';
 import { vaccineSchedule, optionalVaccines } from '../../constants/vaccines';
+import { scheduleVaccineReminder } from '../../utils/notifications';
 import { colors, spacing, typography } from '../../constants/theme';
 
 const VaccinesScreen = () => {
@@ -40,9 +41,42 @@ const VaccinesScreen = () => {
     }));
   }, [ageInMonths, completedVaccines]);
 
-  const handleToggleVaccine = (vaccineId) => {
+  const handleToggleVaccine = async (vaccineId) => {
     if (!selectedChildId) return;
+    
+    const isCompleted = completedVaccines.includes(vaccineId);
+    const vaccine = vaccineSchedule.find(v => v.id === vaccineId);
+    const settings = useAppStore.getState().settings;
+    
     toggleVaccine(selectedChildId, vaccineId);
+    
+    // Aşı tamamlandıysa ve bildirimler aktifse, sonraki aşı için hatırlatıcı ekle
+    if (!isCompleted && settings?.vaccineReminders && settings?.notificationsEnabled) {
+      const currentIndex = vaccineSchedule.findIndex(v => v.id === vaccineId);
+      const nextVaccine = vaccineSchedule[currentIndex + 1];
+      
+      if (nextVaccine && child) {
+        const childBirthDate = dayjs(child.birthDate);
+        const nextVaccineDate = childBirthDate.add(nextVaccine.ageMonths, 'month').toDate();
+        
+        // Sadece gelecekteki aşılar için hatırlatıcı ekle
+        if (dayjs(nextVaccineDate).isAfter(dayjs())) {
+          try {
+            await scheduleVaccineReminder(
+              nextVaccine.name,
+              nextVaccineDate,
+              child.name
+            );
+            Alert.alert(
+              'Başarılı',
+              `${vaccine.name} tamamlandı! ✅\n\nSonraki aşı (${nextVaccine.name}) için hatırlatıcı eklendi. 🔔`
+            );
+          } catch (error) {
+            console.error('Hatırlatıcı eklenirken hata:', error);
+          }
+        }
+      }
+    }
   };
 
   const dueVaccines = child ? vaccineStatus.filter(v => v.status === 'due' && !completedVaccines.includes(v.id)) : [];

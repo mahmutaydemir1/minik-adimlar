@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import ChildrenScreen from '../screens/children/ChildrenScreen';
 import ChildOverviewScreen from '../screens/children/ChildOverviewScreen';
@@ -10,10 +11,22 @@ import JournalScreen from '../screens/children/JournalScreen';
 import HealthScreen from '../screens/children/HealthScreen';
 import PregnancyScreen from '../screens/pregnancy/PregnancyScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
+import NotificationSettingsScreen from '../screens/settings/NotificationSettingsScreen';
 import { TAB_ROUTES } from './types';
 import { colors } from '../constants/theme';
 
+const Stack = createNativeStackNavigator();
+
 const Tab = createBottomTabNavigator();
+
+const SettingsStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SettingsMain" component={SettingsScreen} />
+      <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
+    </Stack.Navigator>
+  );
+};
 
 const MainTabs = () => {
   return (
@@ -131,7 +144,7 @@ const MainTabs = () => {
       />
       <Tab.Screen 
         name={TAB_ROUTES.SETTINGS} 
-        component={SettingsScreen} 
+        component={SettingsStack} 
         options={{ 
           title: 'Ayarlar',
           tabBarIcon: ({ color, size }) => (

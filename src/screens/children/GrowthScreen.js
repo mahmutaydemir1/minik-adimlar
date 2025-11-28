@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, TouchableOpacity, Modal, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
@@ -10,6 +10,7 @@ import DatePicker from '../../components/DatePicker';
 import PrimaryButton from '../../components/PrimaryButton';
 import ChildSelector from '../../components/ChildSelector';
 import useAppStore from '../../store/appStore';
+import { scheduleMonthlyGrowthReminder } from '../../utils/notifications';
 import { colors, spacing, typography, borderRadius, shadows } from '../../constants/theme';
 
 dayjs.extend(customParseFormat);
@@ -87,6 +88,21 @@ const GrowthScreen = () => {
     setHeadCircumference(record.headCircumferenceCm?.toString() || '');
     setModalVisible(true);
   };
+
+  // İlk yüklemede hatırlatıcı kur
+  useEffect(() => {
+    const setupReminder = async () => {
+      const settings = useAppStore.getState().settings;
+      if (selectedChild && settings?.growthReminders && settings?.notificationsEnabled) {
+        try {
+          await scheduleMonthlyGrowthReminder(selectedChild.name);
+        } catch (error) {
+          console.error('Büyüme hatırlatıcısı kurulamadı:', error);
+        }
+      }
+    };
+    setupReminder();
+  }, [selectedChild]);
 
   const handleSave = () => {
     if (!selectedChildId) {

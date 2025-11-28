@@ -16,15 +16,40 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.minikadimlar.app"
+      "bundleIdentifier": "com.minikadimlar.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FF6B9D"
       },
-      "package": "com.minikadimlar.app"
+      "package": "com.minikadimlar.app",
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM"
+      ],
+      "useNextNotificationsApi": true
     },
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#6366F1",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Minik Adımlar"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#6366F1",
+          "sounds": []
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },

@@ -7,7 +7,7 @@ import useAppStore from '../../store/appStore';
 import Card from '../../components/Card';
 import { colors, spacing, typography, borderRadius } from '../../constants/theme';
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ navigation }) => {
   const children = useAppStore((state) => state.children);
   const pregnancies = useAppStore((state) => state.pregnancies);
   const growthRecords = useAppStore((state) => state.growthRecords);
@@ -186,6 +186,25 @@ const SettingsScreen = () => {
           </TouchableOpacity>
         </Card>
 
+        {/* Bildirimler */}
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>Bildirimler</Text>
+          
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('NotificationSettings')}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+              <View>
+                <Text style={styles.menuItemTitle}>Bildirim Ayarları</Text>
+                <Text style={styles.menuItemSubtitle}>Hatırlatıcıları yönet</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        </Card>
+
         {/* Yakında Gelecek */}
         <Card style={styles.comingSoonCard}>
           <Text style={styles.comingSoonTitle}>🚀 Yakında Gelecek Özellikler</Text>
@@ -194,16 +213,16 @@ const SettingsScreen = () => {
             <Text style={styles.featureText}>Karanlık mod</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="notifications" size={18} color={colors.textMuted} />
-            <Text style={styles.featureText}>Bildirim ayarları</Text>
-          </View>
-          <View style={styles.featureItem}>
             <Ionicons name="cloud-upload" size={18} color={colors.textMuted} />
             <Text style={styles.featureText}>Cloud yedekleme</Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="language" size={18} color={colors.textMuted} />
             <Text style={styles.featureText}>Dil seçimi</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Ionicons name="camera" size={18} color={colors.textMuted} />
+            <Text style={styles.featureText}>Fotoğraf albümü</Text>
           </View>
         </Card>
 
