@@ -33,8 +33,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "SCHEDULE_EXACT_ALARM"
-      ],
-      "useNextNotificationsApi": true
+      ]
     },
     "notification": {
       "icon": "./assets/icon.png",
@@ -51,7 +50,8 @@
           "sounds": []
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-font"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
