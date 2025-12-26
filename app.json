@@ -1,4 +1,4 @@
-﻿{
+{
   "expo": {
     "name": "Minik Adımlar",
     "slug": "minik-adimlar",
@@ -18,7 +18,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.minikadimlar.app",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -48,7 +50,8 @@
           "color": "#6366F1",
           "sounds": []
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
