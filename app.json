@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Minik Adımlar",
-    "slug": "minik-adimlar",
+    "name": "Hamilelik Takibi & Anne Rehberi",
+    "slug": "hamilelik-takibi-anne-rehberi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.minikadimlar.app",
+      "bundleIdentifier": "com.aydemirapps.hamileliktakibi",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification"
@@ -28,7 +28,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FF6B9D"
       },
-      "package": "com.minikadimlar.app",
+      "package": "com.aydemirapps.hamileliktakibi",
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -38,8 +38,7 @@
     "notification": {
       "icon": "./assets/icon.png",
       "color": "#6366F1",
-      "androidMode": "default",
-      "androidCollapsedTitle": "Minik Adımlar"
+      "androidCollapsedTitle": "Hamilelik Takibi"
     },
     "plugins": [
       [
@@ -58,8 +57,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "minik-adimlar"
+        "projectId": "fddfa775-750d-41ea-8924-efe4133a7fa7"
       }
-    }
+    },
+    "owner": "mahmutaydemir"
   }
 }
